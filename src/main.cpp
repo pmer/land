@@ -150,7 +150,7 @@ lexString(Token* token, char** src, String* buf) noexcept {
 }
 
 static void
-lex(Token* token, char** src, String* buf) noexcept {
+lexToken(Token* token, char** src, String* buf) noexcept {
 again:
     char c = **src;
 
@@ -223,19 +223,14 @@ stmt(Token* tokens, size_t size) noexcept {
     }
 }
 
-int
-main(int argc, char* argv[]) noexcept {
-    if (argc != 2) {
-        sout << "usage: dl INPUT\n";
-        return 1;
-    }
-
+static void
+lexFile(StringView path) noexcept {
     String data;
-    readFile(argv[1], data);
+    readFile(path, data);
 
     if (data.data == 0) {
         sout << "Cannot read file\n";
-        return 1;
+        return;
     }
 
     Vector<Token> tokens;
@@ -247,7 +242,7 @@ main(int argc, char* argv[]) noexcept {
         tokens.grow();
         token = &tokens[tokens.size++];
 
-        lex(token, &src, &buf);
+        lexToken(token, &src, &buf);
 
         if (token->type == T_EOF) {
             break;
@@ -257,6 +252,18 @@ main(int argc, char* argv[]) noexcept {
             tokens.size = 0;
             buf.size = 0;
         }
+    }
+}
+
+int
+main(int argc, char* argv[]) noexcept {
+    if (argc == 1) {
+        sout << "usage: dl INPUT\n";
+        return 1;
+    }
+
+    for (int i = 1; i < argc; i++) {
+        lexFile(argv[i]);
     }
 
     return 0;
