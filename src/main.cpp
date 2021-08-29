@@ -71,7 +71,7 @@ lexIdent(Token* token, char** src, String* buf) noexcept {
 
     do {
         c = *data++;
-    } while (('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9'));
+    } while (c && ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9'));
     data--;
 
     size_t size = data - *src;
@@ -89,8 +89,9 @@ lexInteger(Token* token, char** src) noexcept {
     char c;
 
     do {
-        c = *++data;
-    } while ('0' <= c && c <= '9');
+        c = *data++;
+    } while (c && '0' <= c && c <= '9');
+    data--;
 
     size_t size = data - *src;
 
@@ -108,16 +109,44 @@ lexInteger(Token* token, char** src) noexcept {
 
 static void
 lexString(Token* token, char** src, String* buf) noexcept {
-    const char* begin = *src;
+    char* data = *src + 1;
+    char c;
+    size_t begin = buf->size;
+
     while (true) {
-        char c = *begin;
-        if (c == 0) {
-            return;
+        c = *data++;
+        if (c == 0 || c == '"') {
+            break;
         }
-        if (c == '"') {
-            // TODO
+        if (c == '\\') {
+            switch (*data++) {
+            case '"':
+                c = '"';
+                break;
+            case '\\':
+                c = '\\';
+                break;
+            case 'n':
+                c = '\n';
+                break;
+            case 't':
+                c = '\t';
+                break;
+            }
         }
+        *buf << c;
     }
+
+    *src = data;
+
+    token->type = T_STRING;
+    token->data.string.data = buf->data + begin;
+    token->data.string.size = buf->size - begin;
+
+    /*
+    sout << "string() = ";
+    printToken(token);
+    */
 }
 
 static void
@@ -151,6 +180,7 @@ again:
             lexIdent(token, src, buf);
         }
         else {
+            *src += 1;
             goto again;
         }
     }
@@ -197,6 +227,11 @@ int
 main() noexcept {
     String data;
     readFile("hi.dl", data);
+
+    if (data.data == 0) {
+        sout << "No file\n";
+        return 1;
+    }
 
     Vector<Token> tokens;
     Token* token;
