@@ -224,12 +224,17 @@ stmt(Token* tokens, size_t size) noexcept {
 }
 
 int
-main() noexcept {
+main(int argc, char* argv[]) noexcept {
+    if (argc != 2) {
+        sout << "usage: dl INPUT\n";
+        return 1;
+    }
+
     String data;
-    readFile("hi.dl", data);
+    readFile(argv[1], data);
 
     if (data.data == 0) {
-        sout << "No file\n";
+        sout << "Cannot read file\n";
         return 1;
     }
 
