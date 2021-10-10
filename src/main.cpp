@@ -259,11 +259,11 @@ stmt(Token* tokens, Size size) noexcept {
 static void
 lexFile(StringView path) noexcept {
     String data;
-    Nanoseconds start;
+    //Nanoseconds start;
 
-    start = chronoNow();
+    //start = chronoNow();
     readFile(path, data);
-    serr << "readFile [" << ns_to_s_d(chronoNow() - start) << "s]\n";
+    //serr << "readFile [" << ns_to_s_d(chronoNow() - start) << "s]\n";
 
     if (data.data == 0) {
         sout << "Cannot read file\n";
@@ -278,7 +278,7 @@ lexFile(StringView path) noexcept {
     tokens.reserve(32);
     buf.reserve(256);
 
-    start = chronoNow();
+    //start = chronoNow();
     while (true) {
         tokens.grow();
         token = &tokens[tokens.size++];
@@ -295,7 +295,7 @@ lexFile(StringView path) noexcept {
         }
     }
 
-    serr << "lex+eval [" << ns_to_s_d(chronoNow() - start) << "s]\n";
+    //serr << "lex+eval [" << ns_to_s_d(chronoNow() - start) << "s]\n";
 }
 
 int
