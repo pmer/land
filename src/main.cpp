@@ -1,3 +1,4 @@
+#include "os/chrono.h"
 #include "os/os.h"
 #include "util/int.h"
 #include "util/io.h"
@@ -241,10 +242,10 @@ stmt(Token* tokens, Size size) noexcept {
     case T_IDENT:
         content.data = tokens[0].data.ident.data;
         content.size = tokens[0].data.ident.size;
-        if (content == "greet") {
+        if (content[0] == 'g' && content == "greet") {
             sout << "Greetings!\n";
         }
-        else if (content == "print") {
+        else if (content[0] == 'p' && content == "print") {
             stmtPrint(tokens + 1, size - 1);
         }
         break;
@@ -258,7 +259,11 @@ stmt(Token* tokens, Size size) noexcept {
 static void
 lexFile(StringView path) noexcept {
     String data;
+    Nanoseconds start;
+
+    start = chronoNow();
     readFile(path, data);
+    serr << "readFile [" << ns_to_s_d(chronoNow() - start) << "s]\n";
 
     if (data.data == 0) {
         sout << "Cannot read file\n";
@@ -270,6 +275,10 @@ lexFile(StringView path) noexcept {
     char* src = data.data;
     String buf;
 
+    tokens.reserve(32);
+    buf.reserve(256);
+
+    start = chronoNow();
     while (true) {
         tokens.grow();
         token = &tokens[tokens.size++];
@@ -285,10 +294,15 @@ lexFile(StringView path) noexcept {
             buf.size = 0;
         }
     }
+
+    serr << "lex+eval [" << ns_to_s_d(chronoNow() - start) << "s]\n";
 }
 
 int
 main(int argc, char* argv[]) noexcept {
+    Flusher f1(serr);
+    Flusher f0(sout);
+
     if (argc == 1) {
         sout << "usage: dl INPUT\n";
         return 1;

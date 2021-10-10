@@ -13,7 +13,7 @@ add_executable(${EXE}
 )
 
 include_directories(${TSUNAGARI_INCLUDE_DIRECTORIES} src)
-target_link_libraries(${EXE} PRIVATE tsutil)
+target_link_libraries(${EXE} tsutil)
 
 if(NOT ${CMAKE_VERSION} VERSION_LESS 3.8.0)
     get_target_property(EXE_SOURCES ${EXE} SOURCES)
