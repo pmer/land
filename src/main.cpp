@@ -10,30 +10,37 @@ enum Type {
     T_EOF,
     T_IDENT,
     T_INT,
+    T_PAREN_O,
+    T_PAREN_C,
     T_SEMI,
     T_STRING,
 };
 
+// 16 bytes
 struct IdentData {
     const char* data;
-    size_t size;
+    Size size;
 };
 
+// 4 bytes
 struct IntegerData {
-    int32_t value;
+    I32 value;
 };
 
+// 16 bytes
 struct StringData {
     const char* data;
-    size_t size;
+    Size size;
 };
 
+// 16 bytes
 union TokenData {
     struct IdentData ident;
     struct IntegerData integer;
     struct StringData string;
 };
 
+// 20 bytes
 struct Token {
     enum Type type;
     union TokenData data;
@@ -43,6 +50,8 @@ const char* TYPE_NAMES[] = {
     "T_EOF",
     "T_IDENT",
     "T_INT",
+    "T_PAREN_O",
+    "T_PAREN_C",
     "T_SEMI",
     "T_STRING",
 };
@@ -74,7 +83,7 @@ lexIdent(Token* token, char** src, String* buf) noexcept {
     } while (c && ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9'));
     data--;
 
-    size_t size = data - *src;
+    Size size = data - *src;
     *buf << StringView(*src, size);
     *src = data;
 
@@ -93,9 +102,9 @@ lexInteger(Token* token, char** src) noexcept {
     } while (c && '0' <= c && c <= '9');
     data--;
 
-    size_t size = data - *src;
+    Size size = data - *src;
 
-    int32_t value;
+    I32 value;
     char old = *data;
     *data = 0;
     parseInt0(&value, StringView(*src, size));
@@ -111,7 +120,7 @@ static void
 lexString(Token* token, char** src, String* buf) noexcept {
     char* data = *src + 1;
     char c;
-    size_t begin = buf->size;
+    Size begin = buf->size;
 
     while (true) {
         c = *data++;
@@ -172,6 +181,14 @@ again:
         *src += 1;
         token->type = T_SEMI;
         break;
+    case '(':
+        *src += 1;
+        token->type = T_PAREN_O;
+        break;
+    case ')':
+        *src += 1;
+        token->type = T_PAREN_C;
+        break;
     case '"':
         lexString(token, src, buf);
         break;
@@ -192,10 +209,22 @@ again:
 }
 
 static void
-stmt(Token* tokens, size_t size) noexcept {
+stmtPrint(Token* tokens, Size size) noexcept {
+    // Skip open parenthesis.
+    tokens++;
+    size--;
+
+    // Only support a single string argument for now.
+    StringView argument(tokens[0].data.string.data, tokens[0].data.string.size);
+
+    sout << argument << '\n';
+}
+
+static void
+stmt(Token* tokens, Size size) noexcept {
     /*
     sout << "stmt(tokens = [\n";
-    for (size_t i = 0; i < size; i++) {
+    for (Size i = 0; i < size; i++) {
         sout << "    ";
         printToken(tokens + i);
     }
@@ -214,6 +243,9 @@ stmt(Token* tokens, size_t size) noexcept {
         content.size = tokens[0].data.ident.size;
         if (content == "greet") {
             sout << "Greetings!\n";
+        }
+        else if (content == "print") {
+            stmtPrint(tokens + 1, size - 1);
         }
         break;
     case T_INT:
