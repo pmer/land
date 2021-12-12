@@ -1,0 +1,18 @@
+/*
+void
+my_function() {
+    greet();
+    greet();
+    greet();
+}
+*/
+
+/*
+int
+main() {
+    greet();
+    // my_function();
+}
+*/
+
+greet;
