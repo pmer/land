@@ -9,6 +9,8 @@ set(EXE dl)
 get_filename_component(HERE "${CMAKE_CURRENT_LIST_FILE}" PATH)
 
 add_executable(${EXE}
+    ${HERE}/src/lex.cpp
+    ${HERE}/src/lex.h
     ${HERE}/src/main.cpp
 )
 
