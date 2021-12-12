@@ -1,3 +1,4 @@
+#include "os/c.h"
 #include "os/chrono.h"
 #include "os/os.h"
 #include "util/int.h"
@@ -72,6 +73,30 @@ printToken(Token* token) noexcept {
         break;
     }
     sout << ")\n";
+}
+
+static void
+lexSinglelineComment(char** src) noexcept {
+    *src = static_cast<char*>(memchr(*src, '\n', SIZE_MAX)) + 1;
+}
+
+static void
+lexMultilineComment(char** src) noexcept {
+    *src = static_cast<char*>(memmem(*src, SIZE_MAX, "*/", 2)) + 2;
+}
+
+static void
+lexComment(char** src) noexcept {
+    switch ((*src)[1]) {
+        case '*':
+            lexMultilineComment(src);
+            break;
+        // Should be
+        // case '/':
+        default:
+            lexSinglelineComment(src);
+            break;
+    }
 }
 
 static void
@@ -173,6 +198,9 @@ again:
         goto again;
     case '\n': case ' ': case '\t':
         *src += 1;
+        goto again;
+    case '/':
+        lexComment(src);
         goto again;
     case '0': case '1': case '2': case '3': case '4':
     case '5': case '6': case '7': case '8': case '9':
