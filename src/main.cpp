@@ -77,7 +77,7 @@ printToken(Token* token) noexcept {
 
 static void
 lexSinglelineComment(char** src) noexcept {
-    *src = static_cast<char*>(memchr(*src, '\n', SIZE_MAX)) + 1;
+    *src = static_cast<char*>(memchr(*src, '\n', SIZE_MAX / 2)) + 1;
 }
 
 static void
