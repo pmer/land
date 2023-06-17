@@ -49,8 +49,11 @@ stmt(Token* tokens, Size size) noexcept {
             stmtPrint(tokens + 1, size - 1);
         }
         break;
+    case T_EOF:
     case T_INT:
-        break;
+    case T_PAREN_O:
+    case T_PAREN_C:
+    case T_SEMI:
     case T_STRING:
         break;
     }
@@ -104,7 +107,7 @@ main(int argc, char* argv[]) noexcept {
     Flusher f0(sout);
 
     if (argc == 1) {
-        sout << "usage: dl INPUT\n";
+        sout << "usage: land INPUT\n";
         return 1;
     }
 

@@ -42,7 +42,14 @@ lexSinglelineComment(char** src) noexcept {
 
 static void
 lexMultilineComment(char** src) noexcept {
-    *src = static_cast<char*>(memmem(*src, SIZE_MAX, "*/", 2)) + 2;
+    char* end = static_cast<char*>(memmem(*src, 1024 * 1024, "*/", 2));
+    assert_(end != 0);
+    if (end != 0) {
+        *src = end + 2;
+    }
+    else {
+        *src += strlen(*src);
+    }
 }
 
 static void
