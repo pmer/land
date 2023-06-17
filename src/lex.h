@@ -6,12 +6,23 @@
 
 enum Type {
     T_EOF,
+    T_KW,
     T_IDENT,
     T_INT,
     T_PAREN_O,
     T_PAREN_C,
     T_SEMI,
     T_STRING,
+};
+
+enum Keyword {
+    KW_INT,
+    KW_RETURN,
+};
+
+// 4 bytes
+struct KeywordData {
+    enum Keyword value;
 };
 
 // 8/16 bytes
@@ -33,6 +44,7 @@ struct StringData {
 
 // 8/16 bytes
 union TokenData {
+    struct KeywordData kw;
     struct IdentData ident;
     struct IntegerData integer;
     struct StringData string;

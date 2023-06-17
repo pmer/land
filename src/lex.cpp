@@ -10,6 +10,7 @@
 static
 const char* TYPE_NAMES[] = {
     "T_EOF",
+    "T_KW",
     "T_IDENT",
     "T_INT",
     "T_PAREN_O",
@@ -18,10 +19,19 @@ const char* TYPE_NAMES[] = {
     "T_STRING",
 };
 
+static
+const char* KEYWORD_NAMES[] = {
+    "int",
+    "return",
+};
+
 static void
 printToken(Token* token) noexcept {
     sout << "Token(type=" << TYPE_NAMES[token->type];
     switch (token->type) {
+    case T_KW:
+        sout << ", data=" << KEYWORD_NAMES[token->data.kw.value];
+        break;
     case T_IDENT:
         sout << ", data=" << StringView(token->data.ident.data, token->data.ident.size);
         break;
@@ -83,6 +93,37 @@ lexIdent(Token* token, char** src, String* buf) noexcept {
     token->type = T_IDENT;
     token->data.ident.data = buf->data + buf->size - size;
     token->data.ident.size = size;
+}
+
+static void
+lexKwIdent(Token* token, char** src, String* buf) noexcept {
+    lexIdent(token, src, buf);
+
+    struct IdentData ident = token->data.ident;
+    const char* val = token->data.ident.data;
+    Size size = token->data.ident.size;
+    enum Keyword kw;
+
+    switch (size) {
+    case 3:
+        if (val[0] == 'i' && val[1] == 'n' && val[2] == 't') {
+            kw = KW_INT;
+            goto isKw;
+        }
+        return;
+    case 6:
+        if (val[0] == 'r' && val[1] == 'e' && val[2] == 't' && val[3] == 'u' && val[4] == 'r' && val[5] == 'n') {
+            kw = KW_RETURN;
+            goto isKw;
+        }
+        return;
+    default:
+        return;
+    }
+
+isKw:
+    token->type = T_KW;
+    token->data.kw.value = kw;
 }
 
 static void
@@ -190,7 +231,7 @@ again:
         break;
     default:
         if (('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')) {
-            lexIdent(token, src, buf);
+            lexKwIdent(token, src, buf);
         }
         else {
             *src += 1;
